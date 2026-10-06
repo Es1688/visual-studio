@@ -20,13 +20,14 @@ import studio_common as sc  # noqa: E402
 
 def cmd_estimate(args: argparse.Namespace) -> int:
     model = sc.find_model(args.model)
-    cost = sc.estimate_cost(args.model, args.count)
+    cost = sc.estimate_cost(args.model, args.count, aspect=args.aspect)
+    unit = model.get("price_unit", "per_image")
     warn = (
-        "  [PRICE IS A PLACEHOLDER — verify at fal.ai/pricing]"
-        if model.get("verify_price")
+        "  [price unit: per_megapixel — estimate scales with the aspect size]"
+        if unit == "per_megapixel"
         else ""
     )
-    print(f"{cost:.4f} USD for {args.count} x {args.model}{warn}")
+    print(f"{cost:.4f} USD for {args.count} x {args.model} ({args.aspect}){warn}")
     if cost > sc.confirm_threshold():
         print(
             f"Above confirm_threshold {sc.confirm_threshold():.2f} USD —"
@@ -67,6 +68,12 @@ def main(argv: list[str] | None = None) -> int:
     p_estimate = sub.add_parser("estimate", help="estimated cost before a paid call")
     p_estimate.add_argument("--model", required=True)
     p_estimate.add_argument("--count", type=int, default=1)
+    p_estimate.add_argument(
+        "--aspect",
+        default="square",
+        choices=list(sc.ASPECT_TO_PRESET),
+        help="affects per_megapixel pricing",
+    )
     p_estimate.set_defaults(func=cmd_estimate)
 
     p_spend = sub.add_parser("spend", help="actual spend from the manifest")

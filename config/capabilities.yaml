@@ -1,51 +1,85 @@
 # Capabilities: models, operations, aspect ratios, prices.
-# PRICES ARE PLACEHOLDERS (verify_price: true): check https://fal.ai/pricing and
-# the model page before the first paid run (AGENTS.md, «Принципы»).
+# Prices verified 2026-10-06 against fal.ai model pages / llms.txt / OpenAPI
+# (see notes per model). Units matter: per_megapixel means price x MP of the
+# actually requested image_size (studio_common.estimate_cost); per_image is a
+# flat price; free must still be re-checked in the dashboard on first runs.
 models:
   - id: flux-dev
     provider: fal
     endpoint: fal-ai/flux/dev
     operations: [text_to_image]
+    price: 0.025
+    price_unit: per_megapixel      # $0.025/MP; 1080x1080 = 1.17MP ~ $0.029
     aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
-    price_per_image: 0.025
-    verify_price: true
+    aspect_mode: custom_size       # payload: image_size {width, height} (256-14142, even)
     seed_supported: true
+    verified: 2026-10-06
+    notes: >
+      Enum image_size has no 9:16/4:5 - studio aspects go through custom sizes.
+      NSFW safety checker on by default (enable_safety_checker); outputs marked
+      suitable for personal and commercial use (BFL dev-weights license caveat
+      in providers.yaml).
 
   - id: flux-pro-kontext
     provider: fal
     endpoint: fal-ai/flux-pro/kontext
     operations: [image_to_image, edit_reference]
+    price: 0.04
+    price_unit: per_image
     aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
-    price_per_image: 0.04
-    verify_price: true
-    seed_supported: false
+    aspect_mode: aspect_ratio      # payload: aspect_ratio string
+    aspect_params:
+      square: "1:1"
+      landscape_16_9: "16:9"
+      portrait_9_16: "9:16"
+      portrait_4_5: "3:4"          # no 4:5 in enum: generate 3:4, crop downstream
+    seed_supported: true
+    verified: 2026-10-06
+    notes: >
+      Commercial usage rights included (model card). Default aspect_ratio is
+      match_input_image; payload takes image_url + prompt.
 
   - id: flux-fill
     provider: fal
-    endpoint: fal-ai/flux/dev/inpainting
+    endpoint: fal-ai/flux/dev/fill   # /flux/dev/inpainting is a legacy alias
     operations: [inpaint]
+    price: 0.025
+    price_unit: per_megapixel
     aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
-    price_per_image: 0.025
-    verify_price: true
+    aspect_mode: custom_size
     seed_supported: true
+    verified: 2026-10-06
+    notes: >
+      Inputs: image_url + mask_url + prompt. "Multiple Input Penalty" value
+      not readable from the dump - re-check on the model page before long runs.
 
   - id: esrgan
     provider: fal
-    endpoint: fal-ai/clarity-upscale
+    endpoint: fal-ai/clarity-upscaler   # not clarity-upscale (old name is dead)
     operations: [upscale]
-    aspects: []              # preserves input aspect ratio
-    price_per_image: 0.005
-    verify_price: true
-    seed_supported: false
+    price: 0.03
+    price_unit: per_megapixel           # of the OUTPUT: input MP x scale^2
+    aspects: []                         # follows the input image
+    seed_supported: true
+    scale_range: [1, 4]
+    verified: 2026-10-06
+    notes: >
+      Cheaper alternative fal-ai/real-esrgan at $0.02/compute-second has
+      unpredictable seconds - avoided for deterministic budgeting.
 
   - id: birefnet
     provider: fal
     endpoint: fal-ai/birefnet/v2
     operations: [remove_background]
+    price: 0.0
+    price_unit: free                # docs claim "$0 per compute second"
     aspects: []
-    price_per_image: 0.005
-    verify_price: true
     seed_supported: false
+    verified: 2026-10-06
+    notes: >
+      Verify the first real charge in the fal dashboard (docs say free).
+      output_format png/webp/gif; operating_resolution 1024|2048|2304;
+      no safety checker on this endpoint.
 
 export_presets:
   square_1x1:

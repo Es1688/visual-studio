@@ -48,7 +48,11 @@ def now_iso() -> str:
 
 
 def test_estimate_uses_capabilities(staged):
-    assert sc.estimate_cost("flux-dev", 2) == pytest.approx(0.05)
+    models = {m["id"]: m for m in sc.load_capabilities()["models"]}
+    width, height = sc.aspect_pixels("square")
+    expected = round(models["flux-dev"]["price"] * (width * height / 1e6) * 2, 4)
+    assert sc.estimate_cost("flux-dev", 2, aspect="square") == expected
+    assert sc.estimate_cost("flux-pro-kontext", 2, aspect="square") == pytest.approx(0.08)
 
 
 def test_unknown_model_exits(staged):

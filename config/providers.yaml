@@ -5,9 +5,33 @@ providers:
     base_url: https://fal.run
     queue_url: https://queue.fal.run
     auth: FAL_KEY            # env var name; scripts read os.environ["FAL_KEY"]
-    docs: https://docs.fal.ai
+    docs: https://fal.ai/docs
     pricing: https://fal.ai/pricing
+    verified: 2026-10-06
+    policy:
+      data_training: >
+        MSA (Enterprise) explicitly excludes training on customer data unless
+        agreed in an Order Form; self-serve plans have no public wording —
+        keep this in mind before sensitive uploads.
+        https://fal.ai/legal/master-subscription-agreement.md
+      data_retention: >
+        Inputs/outputs are stored on the fal CDN: developer plan 1 day,
+        professional 30 days, enterprise configurable.
+        https://fal.ai/docs/data-retention.md
+      content_moderation: >
+        NSFW image classifier is ON by default on serverless text-to-image and
+        image-to-image endpoints; per-request toggle enable_safety_checker /
+        safety_checker. https://fal.ai/docs/content-moderation.md
+      rate_limits: >
+        Concurrency-based, no RPM: free 3, starter 20, developer 50,
+        professional 100, enterprise custom. https://fal.ai/docs/rate-limits.md
+      commercial_use: >
+        Starter+ plans carry a Commercial Use License; the kontext model card
+        says 'Commercial usage rights included'; FLUX.1 [dev]/Fill outputs are
+        marked suitable for commercial use, while the BFL dev-weights license
+        is non-commercial — decide per project if that caveat matters.
     notes: >
-      Before the first paid run verify per model: price, rate limits, data-training
-      policy, commercial terms and content filters — by documentation, not memory.
-      Record the check date in this file when done.
+      Endpoints, prices and price units per model live in
+      config/capabilities.yaml (verified 2026-10-06 against model pages,
+      llms.txt and the queue OpenAPI). birefnet/v2 is documented as free —
+      verify the first real charge in the fal dashboard.
