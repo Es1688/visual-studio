@@ -5,8 +5,9 @@ description: Редактирование изображений — правк�
 
 # image-edit
 
-Статус: работает с P3 (`edit_image.py`, `upscale.py`) и P4 (`compose.py`);
-до этого скрипты-заглушки отвечают кодом 3 с указанием стадии.
+Статус: реализован (P3: edit/inpaint/remove_background и upscale; P4: compose).
+Реальные правки и генерация требуют `FAL_KEY`; compose детерминирован и работает
+офлайн.
 
 - **Редактирование по reference** (товар/стиль/персонаж, новое окружение):
   `uv run python scripts/edit_image.py --project <p> --asset <id> --mode edit`
