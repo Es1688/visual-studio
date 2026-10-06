@@ -33,6 +33,7 @@
 | «deny-правила агента» для `.env` | `.gitignore` + **PreToolUse-hook** в `.zcode/config.json` (`hooks.enabled: true`): скрипт `scripts/hooks/deny_secrets.py` возвращает exit 2 (deny) на обращения к `.env` / `*.key` / `*.pem` |
 | Подтверждение расходов «при превышении порога» | оценка через `cost.py estimate`; выше `confirm_threshold` из `config/budget.yaml` → агент спрашивает пользователя (AskUserQuestion); превышение дневного/проектного лимита — жёсткий отказ скрипта (не обходить) |
 | Визуальный QC «vision-проверка» | агент читает изображения нативно (Read) по инструкции скилла `image-qc`; отдельный vision-MCP не нужен |
+| — | `.zcode/project.yaml` — манифест Engineering Hub: quality-checks (`ruff`, `pytest`), ограничения проекта |
 | — | архитектурные решения — короткие ADR в `docs/adr/` |
 | MCP «если позже понадобится» | слот известен заранее: `.zcode/config.json` → `mcp.servers`; в этапе 1 пусто |
 
@@ -58,6 +59,7 @@ visual studio/                  # корень репо = workspace
 ├── .gitignore                  # .env, *.key, *.pem, logs/, generated/, working/
 ├── pyproject.toml              # uv; playwright добавляется на P4
 ├── .zcode/
+│   ├── project.yaml            # манифест Engineering Hub (quality, ограничения, ai)
 │   ├── config.json             # hooks (deny .env); сюда же ляжет mcp.servers (этап 2)
 │   └── skills/
 │       ├── image-generate/SKILL.md
@@ -190,10 +192,9 @@ qc{status}, dry_run?`.
 
 ## 10. Порядок работ
 
-**P0. Каркас (готово в этом коммите).** Структура, AGENTS.md, hook-запрет `.env`,
-скиллы, `config/*.yaml`, схема манифеста, скрипты (dry-run/заглушки), тесты, git.
-Отдельный `.zcode/project.yaml` не создаётся: команды проверок зафиксированы в
-AGENTS.md («Разработка»), структуру задач при первой задаче создаст git-start-task.
+**P0. Каркас (готово).** Структура, AGENTS.md, hook-запрет `.env`,
+`.zcode/project.yaml`, скиллы, `config/*.yaml`, схема манифеста, скрипты
+(dry-run/заглушки), тесты, git.
 Готово, когда: hook отклоняет чтение `.env`; `ruff` + `pytest` зелёные;
 `gen_image.py --dry-run` пишет валидную запись в манифест; `cost.py check`
 работает; пустой запуск не ломает манифест.
@@ -248,6 +249,6 @@ Playwright (headless Chromium; зависимость добавляется з�
 - Batch (P6) можно запускать фоновой командой и продолжать работу в сессии.
 - Hook в `.zcode/config.json` блокирует любые обращения к `.env`/`*.key`/`*.pem`;
   это последняя линия защиты после AGENTS.md и `.gitignore`.
-- Перед коммитом: `uv run ruff check .` и `uv run pytest -q` (команды зафиксированы
-  в AGENTS.md, раздел «Разработка»); коммиты — Conventional Commits; push — только
-  с явного разрешения пользователя.
+- Перед коммитом: `uv run ruff check .` и `uv run pytest -q` (те же команды — в
+  `.zcode/project.yaml`, блок quality); коммиты — Conventional Commits; push —
+  только с явного разрешения пользователя.

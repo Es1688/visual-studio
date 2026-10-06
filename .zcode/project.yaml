@@ -1,0 +1,25 @@
+version: 1
+name: media-studio
+type: media-pipeline         # этап 1: изображения над облачными провайдерами
+description: Image Studio, этап 1 — генерация, редактирование, композитинг и QC рекламных изображений над облачными провайдерами (fal.ai)
+
+repository:
+  platform: local            # remote нет; push — только с явного разрешения пользователя
+  default_branch: main
+  strategy: github-flow
+
+quality:
+  test: uv run pytest -q
+  lint: uv run ruff check .
+
+constraints:
+  - projects/<p>/references/ и exports/ — эталоны заказчика; не изменять без явной задачи
+  - секреты только в env (FAL_KEY); .env заблокирован PreToolUse-hook (.zcode/config.json)
+  - перед каждым платным вызовом — оценка scripts/cost.py; порог и лимиты — config/budget.yaml
+  - каждый созданный файл — запись в projects/<p>/manifest.json по schema/manifest.schema.json
+  - правила агента — AGENTS.md; скиллы .zcode/skills/ — тонкие инструкции к скриптам
+
+ai:
+  allow_shell: controlled
+  allow_git_push: confirm
+  execution_mode: build

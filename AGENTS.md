@@ -67,8 +67,8 @@
 ## Разработка
 
 - Python ≥ 3.11, окружение uv (`uv sync`). Зависимости — в `pyproject.toml`.
-- Перед коммитом: `uv run ruff check .` и `uv run pytest -q` (команды зафиксированы
-  здесь; отдельный `.zcode/project.yaml` не используется).
+- Перед коммитом: `uv run ruff check .` и `uv run pytest -q` (те же команды — в
+  `.zcode/project.yaml`).
 - Коммиты — Conventional Commits; push и merge в main — только с явного
   разрешения пользователя.
 - Скиллы (`.zcode/skills/`) — тонкие инструкции к скриптам; правила живут здесь.
