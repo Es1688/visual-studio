@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>banner</title>
+<style>
+  /* Base universal banner template (ADR-0003). Placeholders are filled by
+     scripts/compose.py: {{background}} {{headline}} {{sub}} {{cta}} {{logo}}.
+     Blocks whose data is empty render as empty elements and are hidden by the
+     :empty rules at the bottom. No JS, system fonts only. */
+  :root {
+    --safe-inset: 5%;            /* safe zone: >= 5% off every side */
+    --scrim: rgba(12, 12, 14, 0.55);
+    --ink: #ffffff;
+    --cta-bg: #141418;
+    --cta-ink: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: system-ui, sans-serif;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .safe {
+    position: absolute;
+    inset: var(--safe-inset);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3vh;
+  }
+
+  .text {
+    align-self: flex-start;
+    max-width: 88%;
+    padding: 2.4vh 2.6vw;
+    border-radius: 2.4vh;
+    background: var(--scrim);
+    color: var(--ink);
+  }
+
+  .headline {
+    margin: 0;
+    font-size: clamp(36px, 7vw, 150px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+
+  .sub {
+    margin: 1.4vh 0 0;
+    font-size: clamp(20px, 3.4vw, 72px);
+    font-weight: 400;
+    line-height: 1.25;
+    opacity: 0.92;
+  }
+
+  .bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 3vw;
+  }
+
+  .cta {
+    display: inline-block;
+    max-width: 70vw;
+    padding: 1.8vh 4vw;
+    border-radius: 999px;
+    background: var(--cta-bg);
+    color: var(--cta-ink);
+    font-size: clamp(18px, 3vw, 64px);
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .logo-slot {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .logo {
+    display: block;
+    max-width: 22vw;
+    max-height: 12vh;
+    object-fit: contain;
+  }
+
+  /* Hide blocks that got no data; keep whitespace out of them in the template. */
+  .headline:empty, .sub:empty, .cta:empty, .logo-slot:empty { display: none; }
+  .text:has(.headline:empty):has(.sub:empty) { display: none; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <img class="background" src="{{background}}" alt="">
+    <div class="safe">
+      <div class="text">
+        <h1 class="headline">{{headline}}</h1>
+        <p class="sub">{{sub}}</p>
+      </div>
+      <div class="bottom">
+        <div class="cta">{{cta}}</div>
+        <div class="logo-slot">{{logo}}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
