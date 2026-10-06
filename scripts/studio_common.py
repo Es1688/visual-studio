@@ -1,4 +1,4 @@
-"""Shared helpers for media-studio scripts: configs, manifest, budget, asset ids.
+"""Shared helpers for visual-studio scripts: configs, manifest, budget, asset ids.
 
 Every script writes manifest entries in one format (schema/manifest.schema.json);
 stage 2 (video) will reuse it with type="video".

@@ -1,4 +1,4 @@
-# media-studio — Image Studio (этап 1)
+# visual-studio — Image Studio (этап 1)
 
 Студия рекламных изображений над облачным провайдером fal.ai: генерация по брифу,
 редактирование по reference, inpainting, upscale, удаление фона, детерминированное
@@ -51,7 +51,7 @@ brief.md + references/        config/ (budget, capabilities, providers)
 Требования: Linux/macOS, Python ≥ 3.11, [uv](https://docs.astral.sh/uv/), git.
 
 ```bash
-cd media-studio            # каталог репозитория
+cd visual-studio            # каталог репозитория
 uv sync                    # зависимости (httpx, pillow, jsonschema, pyyaml, playwright, pytest, ruff)
 uv run playwright install chromium   # браузер для compose (~150 МБ, один раз)
 ```

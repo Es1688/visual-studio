@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "media-studio/manifest.schema.json",
+  "$id": "visual-studio/manifest.schema.json",
   "title": "Project asset manifest",
   "description": "One manifest.json per project; every produced file is an entry. The record shape is fixed and stage 2 (video) extends it with type='video' only.",
   "type": "object",

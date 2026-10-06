@@ -1,5 +1,5 @@
 version: 1
-name: media-studio
+name: visual-studio
 type: media-pipeline         # этап 1: изображения над облачными провайдерами
 description: Image Studio, этап 1 — генерация, редактирование, композитинг и QC рекламных изображений над облачными провайдерами (fal.ai)
 

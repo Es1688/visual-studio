@@ -1,9 +1,10 @@
-# Media Studio — план этапа 1: Image Studio (доработан под ZCode)
+# Visual Studio — план этапа 1: Image Studio (доработан под ZCode)
 
 Статус: P0 (каркас) собран. Дата доработки: 2026-10-06.
 Зафиксированные решения: провайдер — **fal.ai** (ADR-0001), compose — **HTML/CSS + Playwright**
 (ADR-0003), манифест — JSON per project (ADR-0002). Репозиторий = этот workspace
-(`media-studio` — имя проекта в конфигах).
+(`visual-studio` — имя проекта в конфигах; каталог репозитория переименован с
+`visual studio` на `visual-studio` 2026-10-06).
 
 ---
 
@@ -51,7 +52,7 @@
 ## 3. Структура репозитория
 
 ```
-visual studio/                  # корень репо = workspace
+visual-studio/                  # корень репо = workspace
 ├── AGENTS.md                   # Level 1: правила агента
 ├── PLAN.md                     # этот документ
 ├── README.md
