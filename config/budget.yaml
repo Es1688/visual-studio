@@ -1,0 +1,10 @@
+# Spending guardrails. cost.py enforces hard limits (day, project);
+# the agent asks the user when an estimate is above confirm_threshold
+# (AGENTS.md, «Бюджет»).
+currency: USD
+limits:
+  per_run: 1.00
+  per_day: 5.00
+  per_project: 20.00
+confirm_threshold: 0.50
+max_retries_per_asset: 3

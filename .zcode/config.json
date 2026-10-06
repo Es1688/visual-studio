@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "enabled": true,
+    "events": {
+      "PreToolUse": [
+        {
+          "matcher": "Read|Bash|Grep|Edit|Write|ApplyPatch",
+          "hooks": [
+            {
+              "type": "command",
+              "timeoutMs": 5000,
+              "command": "python3 \"${ZCODE_PROJECT_DIR}/scripts/hooks/deny_secrets.py\""
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

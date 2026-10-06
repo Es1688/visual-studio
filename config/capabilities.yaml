@@ -1,0 +1,62 @@
+# Capabilities: models, operations, aspect ratios, prices.
+# PRICES ARE PLACEHOLDERS (verify_price: true): check https://fal.ai/pricing and
+# the model page before the first paid run (AGENTS.md, «Принципы»).
+models:
+  - id: flux-dev
+    provider: fal
+    endpoint: fal-ai/flux/dev
+    operations: [text_to_image]
+    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
+    price_per_image: 0.025
+    verify_price: true
+    seed_supported: true
+
+  - id: flux-pro-kontext
+    provider: fal
+    endpoint: fal-ai/flux-pro/kontext
+    operations: [image_to_image, edit_reference]
+    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
+    price_per_image: 0.04
+    verify_price: true
+    seed_supported: false
+
+  - id: flux-fill
+    provider: fal
+    endpoint: fal-ai/flux/dev/inpainting
+    operations: [inpaint]
+    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
+    price_per_image: 0.025
+    verify_price: true
+    seed_supported: true
+
+  - id: esrgan
+    provider: fal
+    endpoint: fal-ai/clarity-upscale
+    operations: [upscale]
+    aspects: []              # preserves input aspect ratio
+    price_per_image: 0.005
+    verify_price: true
+    seed_supported: false
+
+  - id: birefnet
+    provider: fal
+    endpoint: fal-ai/birefnet/v2
+    operations: [remove_background]
+    aspects: []
+    price_per_image: 0.005
+    verify_price: true
+    seed_supported: false
+
+export_presets:
+  square_1x1:
+    width: 1080
+    height: 1080
+  portrait_4x5:
+    width: 1080
+    height: 1350
+  portrait_9x16:
+    width: 1080
+    height: 1920
+  landscape_16x9:
+    width: 1920
+    height: 1080

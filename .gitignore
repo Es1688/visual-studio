@@ -1,0 +1,19 @@
+# secrets — never commit; .env is also blocked by the PreToolUse hook
+.env
+*.key
+*.pem
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# runtime artifacts
+logs/
+projects/*/generated/
+projects/*/working/
+
+# ZCode plan-mode session artifacts (skills/, config.json and tasks/ stay tracked)
+.zcode/plans/

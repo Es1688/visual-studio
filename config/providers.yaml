@@ -1,0 +1,13 @@
+# Providers and auth. Only env var NAMES here — never values (AGENTS.md, «Секреты»).
+providers:
+  fal:
+    kind: fal
+    base_url: https://fal.run
+    queue_url: https://queue.fal.run
+    auth: FAL_KEY            # env var name; scripts read os.environ["FAL_KEY"]
+    docs: https://docs.fal.ai
+    pricing: https://fal.ai/pricing
+    notes: >
+      Before the first paid run verify per model: price, rate limits, data-training
+      policy, commercial terms and content filters — by documentation, not memory.
+      Record the check date in this file when done.

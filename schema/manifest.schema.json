@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "media-studio/manifest.schema.json",
+  "title": "Project asset manifest",
+  "description": "One manifest.json per project; every produced file is an entry. The record shape is fixed and stage 2 (video) extends it with type='video' only.",
+  "type": "object",
+  "required": ["project", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    }
+  },
+  "$defs": {
+    "asset": {
+      "type": "object",
+      "required": [
+        "id",
+        "path",
+        "type",
+        "provider",
+        "model",
+        "api_version",
+        "operation",
+        "prompt",
+        "seed",
+        "params",
+        "parents",
+        "cost_usd",
+        "created_at",
+        "qc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "description": "<project>-<prefix>-<NNNN>, e.g. demo-img-0001"
+        },
+        "path": {
+          "type": "string",
+          "description": "Repo-relative path of the produced file"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["image"],
+          "description": "Stage 2 adds 'video' without changing the record shape"
+        },
+        "provider": { "type": ["string", "null"] },
+        "model": { "type": ["string", "null"] },
+        "api_version": { "type": ["string", "null"] },
+        "operation": {
+          "type": "string",
+          "description": "text_to_image | image_to_image | edit_reference | inpaint | upscale | remove_background | compose | export | resize | convert"
+        },
+        "prompt": { "type": ["string", "null"] },
+        "seed": { "type": ["integer", "null"] },
+        "params": { "type": "object" },
+        "parents": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Asset ids this file was derived from"
+        },
+        "cost_usd": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Actual spend recorded; 0 for dry-run, planned cost goes to params.planned_cost_usd"
+        },
+        "created_at": { "type": "string", "format": "date-time" },
+        "qc": {
+          "type": "object",
+          "required": ["status"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "pass", "fail", "retry", "approved"]
+            },
+            "checks": {
+              "type": "array",
+              "items": { "type": "object" }
+            }
+          }
+        },
+        "dry_run": { "type": "boolean" }
+      }
+    }
+  }
+}
