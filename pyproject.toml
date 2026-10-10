@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Image Studio stage 1: generation, editing, composition, QC and export of ad creatives over cloud providers (fal.ai)"
 requires-python = ">=3.11"
 dependencies = [
-    "httpx>=0.27",
+    "httpx[socks]>=0.27",
     "pillow>=10.4",
     "jsonschema>=4.23",
     "pyyaml>=6.0",

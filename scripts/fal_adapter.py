@@ -54,6 +54,32 @@ class FalError(RuntimeError):
     """Non-retryable fal.ai failure (bad request, auth, exhausted retries)."""
 
 
+_PROXY_ENV_VARS = (
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "ALL_PROXY",
+    "http_proxy",
+    "https_proxy",
+    "all_proxy",
+)
+
+
+def _normalize_proxy_env() -> None:
+    """Rewrite socks:// proxy URLs to socks5h:// in the process environment.
+
+    Desktop VPN clients often export ALL_PROXY=socks://127.0.0.1:<port>,
+    which httpx rejects at Client() construction ("Unknown scheme for proxy
+    URL"). httpx only accepts socks5:// and socks5h:// (and needs the
+    httpx[socks] extra); socks5h resolves DNS on the proxy side, which also
+    avoids poisoned local DNS for blocked hosts. Must run before
+    httpx.Client() reads the environment.
+    """
+    for var in _PROXY_ENV_VARS:
+        value = os.environ.get(var)
+        if value and value.lower().startswith("socks://"):
+            os.environ[var] = "socks5h://" + value[len("socks://") :]
+
+
 def to_data_uri(path: str | Path) -> str:
     """Local image file -> base64 data URI (reference images in fal payloads).
 
@@ -107,6 +133,7 @@ class FalClient:
         self.max_retries = (
             max_retries if max_retries is not None else sc.max_retries()
         )
+        _normalize_proxy_env()
         self._http = httpx.Client(
             timeout=http_timeout_s,
             transport=transport,
