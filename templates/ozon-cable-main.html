@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ozon-cable-main</title>
+<style>
+  /* Ozon product-card infographic, project marketplace (bespoke template,
+     same contract as banner.html: known fields {{background}} {{logo}} plus
+     data-driven extras {{headline}} {{made_in}} {{usp}} {{specN_value/label}}).
+     Rendered by scripts/compose.py at 4x5 (main) and 1x1 (search crop).
+     No JS, system fonts only; the RF tricolor is pure CSS. */
+  :root {
+    --safe-inset: 4%;                   /* Ozon UI overlays corners: keep clear */
+    --accent: #ff7a00;                  /* safety orange, construction cue */
+    --panel: rgba(16, 18, 22, 0.78);
+    --ink: #ffffff;
+    --ink-dim: #cdd1d8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #101215;
+    font-family: system-ui, "DejaVu Sans", sans-serif;
+  }
+
+  .stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+  .background {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  /* readability gradients: dark top for the text block, dark bottom for specs */
+  .scrim-top {
+    position: absolute; left: 0; right: 0; top: 0; height: 48%;
+    background: linear-gradient(180deg,
+      rgba(8, 9, 12, 0.82) 0%, rgba(8, 9, 12, 0.44) 60%, rgba(8, 9, 12, 0) 100%);
+  }
+  .scrim-bottom {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
+    background: linear-gradient(0deg,
+      rgba(8, 9, 12, 0.86) 0%, rgba(8, 9, 12, 0.42) 68%, rgba(8, 9, 12, 0) 100%);
+  }
+
+  .safe {
+    position: absolute; inset: var(--safe-inset);
+    display: flex; flex-direction: column; gap: 1.5vh;
+  }
+
+  .headline {
+    color: var(--ink);
+    font-size: 6vw;
+    font-weight: 800;
+    line-height: 1.06;
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+    max-width: 97%;
+    text-shadow: 0 0.4vh 1vh rgba(0, 0, 0, 0.6), 0 0 2.4vh rgba(0, 0, 0, 0.35);
+  }
+
+  .made-in {
+    display: inline-flex; align-items: center; gap: 1.2vw;
+    align-self: flex-start;
+    background: #ffffff; color: #15161a;
+    border-radius: 999px;
+    padding: 0.9vh 2.2vw 0.9vh 1vw;
+    font-size: 2.8vw; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.02em;
+    box-shadow: 0 0.5vh 1.4vh rgba(0, 0, 0, 0.35);
+  }
+  .flag {
+    width: 6.6vw; height: 4.4vw; border-radius: 0.55vw; flex: none;
+    background: linear-gradient(180deg,
+      #ffffff 0 33.4%, #0039a6 33.4% 66.7%, #d52b1e 66.7% 100%);
+    box-shadow: inset 0 0 0 0.2vw rgba(0, 0, 0, 0.25);
+  }
+  .made-in .flag { order: -1; }          /* flag on the left of the text */
+
+  .usp {
+    align-self: flex-start;
+    background: var(--accent); color: #17181c;
+    font-size: 3.6vw; font-weight: 800;
+    text-transform: uppercase; line-height: 1.05;
+    padding: 1.2vh 2.6vw; border-radius: 1.2vh;
+    letter-spacing: 0.01em;
+    box-shadow: 0 0.6vh 1.8vh rgba(0, 0, 0, 0.4);
+  }
+
+  .hero {
+    flex: 1; min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo {
+    display: block;
+    width: auto; height: 100%; max-width: 100%;  /* fill hero height, img is
+                                                    pre-cropped to the coil */
+    object-fit: contain;
+    filter: drop-shadow(0 2.8vh 4.2vh rgba(0, 0, 0, 0.55));
+  }
+
+  .specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vw; }
+  .spec {
+    background: var(--panel);
+    border-radius: 1.6vh; border-top: 0.6vh solid var(--accent);
+    padding: 1.3vh 1vw 1.2vh;
+    text-align: center;
+    box-shadow: 0 0.6vh 2vh rgba(0, 0, 0, 0.35);
+  }
+  .spec .value {
+    display: block; color: var(--ink);
+    font-size: 4.7vw; font-weight: 800; line-height: 1.05;
+    white-space: nowrap;
+  }
+  .spec .label {
+    display: block; color: var(--ink-dim);
+    font-size: 2.2vw; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-top: 0.6vh;
+  }
+  .spec:nth-child(3) .value { font-size: 3.5vw; }   /* brand wordmark is long */
+
+  /* Square render (1080x1080): less vertical room -> tighter type, so the
+     product keeps as much hero height as possible. 4x5 keeps base values. */
+  @media (max-height: 1200px) {
+    .headline { font-size: 6.4vw; }
+    .made-in { font-size: 2.9vw; }
+    .flag { width: 7vw; height: 4.6vw; }
+    .usp { font-size: 3.8vw; }
+    .spec .value { font-size: 4.9vw; }
+    .spec:nth-child(3) .value { font-size: 3.7vw; }
+    .spec .label { font-size: 2.4vw; }
+  }
+
+  .headline:empty, .usp:empty { display: none; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <img class="background" src="{{background}}" alt="">
+    <div class="scrim-top"></div>
+    <div class="scrim-bottom"></div>
+    <div class="safe">
+      <h1 class="headline">{{headline}}</h1>
+      <div class="made-in"><span class="flag"></span>{{made_in}}</div>
+      <div class="usp">{{usp}}</div>
+      <div class="hero">{{logo}}</div>
+      <div class="specs">
+        <div class="spec">
+          <span class="value">{{spec1_value}}</span>
+          <span class="label">{{spec1_label}}</span>
+        </div>
+        <div class="spec">
+          <span class="value">{{spec2_value}}</span>
+          <span class="label">{{spec2_label}}</span>
+        </div>
+        <div class="spec">
+          <span class="value">{{spec3_value}}</span>
+          <span class="label">{{spec3_label}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
