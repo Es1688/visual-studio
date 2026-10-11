@@ -154,3 +154,31 @@ def test_compose_no_args_keeps_manifest(staged):
         compose.main([])
     assert exc.value.code == 2
     assert len(sc.load_manifest("demo")["entries"]) == 1
+
+
+def test_fill_template_extra_placeholders_from_data(staged):
+    bg = staged / "projects" / "demo" / "working" / "demo-img-0001.png"
+    logo = staged / "projects" / "demo" / "working" / "logo.png"
+    Image.new("RGBA", (40, 40)).save(logo)
+    template = (
+        '<h1>{{headline}}</h1><b>{{spec1_value}}</b> {{spec1_label}}'
+        '<img src="{{logo}}"><i>{{background}}</i>'
+    )
+    data = {
+        "headline": "кабель <74 м>",
+        "spec1_value": "2900 Вт",
+        "spec1_label": "мощность & ток",
+        "logo": "projects/demo/working/logo.png",
+    }
+    filled = compose.fill_template(template, bg, data)
+    assert "кабель &lt;74 м&gt;" in filled  # plain-text values are escaped
+    assert "2900 Вт" in filled and "мощность &amp; ток" in filled
+    assert 'class="logo"' in filled  # logo/background keep typed handling
+    assert bg.resolve().as_uri() in filled
+    assert "{{" not in filled
+
+
+def test_fill_template_missing_placeholder_raises(staged):
+    bg = staged / "projects" / "demo" / "working" / "demo-img-0001.png"
+    with pytest.raises(compose.ComposeError, match="spec9_value"):
+        compose.fill_template("<p>{{spec9_value}}</p>", bg, {"spec1_value": "74"})

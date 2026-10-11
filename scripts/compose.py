@@ -7,11 +7,16 @@ then renders it with headless Chromium (Playwright, device_scale_factor=1) at
 export-preset sizes from config/capabilities.yaml (ADR-0003). The model never
 draws text/logos (AGENTS.md, «Принципы генерации»).
 
+Templates may declare further {{word}} placeholders; each takes its value from
+the same data.json (escaped as plain text), so bespoke slides (spec rows,
+badges) stay data-driven. A {{word}} with no matching data key is an error.
+
 Usage:
   python scripts/compose.py --project demo --asset demo-img-0001
       --template templates/banner.html --data data.json --ratio 1x1,4x5,9x16
 
-data.json: {"headline": "...", "sub": "...", "cta": "...", "logo": "path-or-null"}
+data.json: {"headline": "...", "sub": "...", "cta": "...", "logo": "path-or-null",
+            "<any-placeholder>": "..."}
 """
 
 from __future__ import annotations
@@ -19,6 +24,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -37,6 +43,7 @@ RATIO_PRESETS = {
 }
 
 DATA_FIELDS = ("headline", "sub", "cta")
+PLACEHOLDER_RE = re.compile(r"\{\{([a-zA-Z0-9_]+)\}\}")
 CHROMIUM_HINT = "Chromium is not installed; run: uv run playwright install chromium"
 
 
@@ -112,9 +119,24 @@ def fill_template(template: str, background: Path, data: dict) -> str:
     values = {field: html.escape(str(data.get(field) or "")) for field in DATA_FIELDS}
     values["background"] = background.resolve().as_uri()
     values["logo"] = logo_tag(data.get("logo"))
+
+    def extra(match: re.Match) -> str:
+        key = match.group(1)
+        if key in ("background", "logo"):
+            return match.group(0)  # handled by the typed values below
+        if key in data and data[key] is not None:
+            return html.escape(str(data[key]))
+        return match.group(0)  # unknown key -> keep, reported below
+
+    filled = PLACEHOLDER_RE.sub(extra, template)
     for key, value in values.items():
-        template = template.replace("{{" + key + "}}", value)
-    return template
+        filled = filled.replace("{{" + key + "}}", value)
+    leftovers = sorted(set(PLACEHOLDER_RE.findall(filled)))
+    if leftovers:
+        raise ComposeError(
+            f"data.json has no value(s) for placeholder(s): {', '.join(leftovers)}"
+        )
+    return filled
 
 
 def render_ratios(html_doc: str, ratios: list[str]) -> list[dict]:
