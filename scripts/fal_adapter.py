@@ -199,6 +199,9 @@ class FalClient:
         self.poll(status_url, timeout_s)
         result = self.result(response_url)
         urls = [image.get("url") for image in result.get("images", [])]
+        single = result.get("image")  # some endpoints (birefnet) return one image
+        if isinstance(single, dict) and single.get("url"):
+            urls.append(single["url"])
         if not urls or any(not url for url in urls):
             raise FalError(f"no images in fal.ai response: {sorted(result)!r:.400}")
         return [self.download(url) for url in urls]

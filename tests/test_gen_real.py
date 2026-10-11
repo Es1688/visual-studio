@@ -152,6 +152,29 @@ def test_submit_retry_on_500_then_success(staged):
     assert (staged / "projects" / "demo" / "generated" / "demo-img-0001.png").is_file()
 
 
+def test_generate_accepts_single_image_response(staged):
+    """birefnet-style endpoints return {"image": {...}} instead of images[]."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST":
+            return httpx.Response(
+                200,
+                json={
+                    "request_id": "req-1",
+                    "status_url": "https://queue.fal.run/m/requests/req-1/status",
+                    "response_url": "https://queue.fal.run/m/requests/req-1",
+                },
+            )
+        if request.url.path.endswith("/status"):
+            return httpx.Response(200, json={"status": "COMPLETED"})
+        if "/requests/" in request.url.path:
+            return httpx.Response(200, json={"image": {"url": "https://media.test/single.png"}})
+        return httpx.Response(200, content=TINY_PNG)
+
+    client = make_client(httpx.MockTransport(handler))
+    assert client.generate("fal-ai/birefnet/v2", {}) == [TINY_PNG]
+
+
 def test_model_without_text_to_image_exits_2(staged, capsys):
     rc = gen_image.main(["--project", "demo", "--prompt", "x", "--model", "esrgan"])
     assert rc == 2
