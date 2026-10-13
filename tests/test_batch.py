@@ -95,7 +95,7 @@ def line(prompt: str, model: str = "flux-dev", aspect: str = "square") -> str:
 
 
 def write_csv(staged: Path, rows_text: str) -> Path:
-    path = staged / "batch.csv"
+    path = staged / "projects" / "demo" / "batch.csv"  # inputs stay in-project
     path.write_text("prompt,model,aspect,count\n" + rows_text, encoding="utf-8")
     return path
 

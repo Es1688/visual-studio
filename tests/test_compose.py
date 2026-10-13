@@ -67,12 +67,13 @@ def seed_background(root: Path) -> str:
 
 
 def write_data(root: Path, data: dict) -> str:
-    path = root / "data.json"
+    path = root / "projects" / "demo" / "data.json"  # inputs stay in-project
     path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-    return "data.json"
+    return "projects/demo/data.json"
 
 
-def run_compose(staged: Path, *, asset: str = "demo-img-0001", data_name: str = "data.json",
+def run_compose(staged: Path, *, asset: str = "demo-img-0001",
+                data_name: str = "projects/demo/data.json",
                 template: str = "templates/banner.html", ratio: str = "4x5") -> int:
     return compose.main(
         [
@@ -170,7 +171,7 @@ def test_fill_template_extra_placeholders_from_data(staged):
         "spec1_label": "мощность & ток",
         "logo": "projects/demo/working/logo.png",
     }
-    filled = compose.fill_template(template, bg, data)
+    filled = compose.fill_template(template, bg, data, data.get("logo"))
     assert "кабель &lt;74 м&gt;" in filled  # plain-text values are escaped
     assert "2900 Вт" in filled and "мощность &amp; ток" in filled
     assert 'class="logo"' in filled  # logo/background keep typed handling
@@ -181,4 +182,4 @@ def test_fill_template_extra_placeholders_from_data(staged):
 def test_fill_template_missing_placeholder_raises(staged):
     bg = staged / "projects" / "demo" / "working" / "demo-img-0001.png"
     with pytest.raises(compose.ComposeError, match="spec9_value"):
-        compose.fill_template("<p>{{spec9_value}}</p>", bg, {"spec1_value": "74"})
+        compose.fill_template("<p>{{spec9_value}}</p>", bg, {"spec1_value": "74"}, None)

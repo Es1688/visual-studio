@@ -159,9 +159,11 @@ def main(
         if not args.mask:
             print("--mask is required for --mode inpaint", file=sys.stderr)
             return 2
-        mask_path = Path(args.mask)
-        if not mask_path.is_absolute():
-            mask_path = sc.REPO_ROOT / mask_path
+        try:
+            mask_path = sc.ensure_project_input(args.project, args.mask, "--mask")
+        except SystemExit as exc:
+            print(exc, file=sys.stderr)
+            return 2
         if not mask_path.is_file():
             print(f"Mask file not found: {args.mask}", file=sys.stderr)
             return 2

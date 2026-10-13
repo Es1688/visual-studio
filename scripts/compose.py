@@ -13,7 +13,11 @@ badges) stay data-driven. A {{word}} with no matching data key is an error.
 
 Usage:
   python scripts/compose.py --project demo --asset demo-img-0001
-      --template templates/banner.html --data data.json --ratio 1x1,4x5,9x16
+      --template projects/demo/templates/banner.html --data projects/demo/data.json
+      --ratio 1x1,4x5,9x16
+
+The template may also come from the shared studio library (templates/<name>.html);
+--data and the logo must live inside the project (isolation, AGENTS.md).
 
 data.json: {"headline": "...", "sub": "...", "cta": "...", "logo": "path-or-null",
             "<any-placeholder>": "..."}
@@ -80,6 +84,16 @@ def repo_path(value: str) -> Path:
     return path if path.is_absolute() else sc.REPO_ROOT / path
 
 
+def _guard_input(
+    project: str, value: str, what: str, shared: tuple[str, ...] = ()
+) -> Path:
+    """ensure_project_input, but as a ComposeError (main() exit code stays 2)."""
+    try:
+        return sc.ensure_project_input(project, value, what, shared=shared)
+    except SystemExit as exc:
+        raise ComposeError(str(exc)) from exc
+
+
 def parse_ratios(raw: str) -> list[str]:
     ratios = [item.strip() for item in raw.split(",") if item.strip()]
     unknown = [item for item in ratios if item not in RATIO_PRESETS]
@@ -118,10 +132,10 @@ def logo_tag(value: object) -> str:
     return f'<img class="logo" src="{path.resolve().as_uri()}" alt="logo">'
 
 
-def fill_template(template: str, background: Path, data: dict) -> str:
+def fill_template(template: str, background: Path, data: dict, logo: str | None) -> str:
     values = {field: html.escape(str(data.get(field) or "")) for field in DATA_FIELDS}
     values["background"] = background.resolve().as_uri()
-    values["logo"] = logo_tag(data.get("logo"))
+    values["logo"] = logo_tag(logo)
 
     def extra(match: re.Match) -> str:
         key = match.group(1)
@@ -182,13 +196,20 @@ def main(argv: list[str] | None = None) -> int:
     try:
         ratios = parse_ratios(args.ratio)
 
-        template_path = repo_path(args.template)
+        template_path = _guard_input(
+            args.project, args.template, "--template", shared=("templates",)
+        )
         if not template_path.is_file():
             raise ComposeError(f"template not found: {template_path}")
-        data_path = repo_path(args.data)
+        data_path = _guard_input(args.project, args.data, "--data")
         if not data_path.is_file():
             raise ComposeError(f"data file not found: {data_path}")
         data = load_data(data_path)
+        # the logo lives with its project; the resolved absolute path is passed
+        # to fill_template separately so the recorded data dict stays as loaded
+        logo = None
+        if data.get("logo"):
+            logo = str(_guard_input(args.project, str(data["logo"]), "logo"))
 
         manifest = sc.load_manifest(args.project)
         parent = find_entry(manifest, args.asset)
@@ -201,7 +222,7 @@ def main(argv: list[str] | None = None) -> int:
             raise ComposeError(f"background file not found: {background}")
 
         html_doc = fill_template(
-            template_path.read_text(encoding="utf-8"), background, data
+            template_path.read_text(encoding="utf-8"), background, data, logo
         )
         rendered = render_ratios(html_doc, ratios)
 

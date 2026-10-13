@@ -77,8 +77,9 @@ visual-studio/                  # корень репо = workspace
 │   ├── generated/              # сырой результат API (в git не попадает)
 │   ├── working/                # промежуточные версии (в git не попадает)
 │   ├── exports/                # финальные файлы после QC и утверждения
+│   ├── templates/              # HTML-шаблоны этого проекта (локально, с проектом)
 │   └── manifest.json           # происхождение каждого ассета + расходы
-├── templates/                  # HTML-шаблоны баннеров/превью (заполняется на P4)
+├── templates/                  # общая библиотека эталонных шаблонов (только чтение)
 ├── docs/adr/                   # ADR решений
 ├── scripts/                    # детерминированный слой (см. §6)
 ├── tests/                      # pytest
@@ -157,9 +158,12 @@ qc{status}, dry_run?`.
 | `qc_image.py` | `--manifest \| --project [--min-side] [--min-std]` + `--asset --set-status pass\|fail\|retry`: детерминированные проверки (схема, разрешение, aspect, не однотонное) и фиксация QC-решений | готов (P0–P5) |
 | `cost.py` | `estimate --model [--count] [--aspect]` / `spend --project [--today]` / `check --project [--planned USD]` | рабочий |
 | `batch.py` | `--project --csv [--concurrency] [--dry-run] [--limit]`: очередь из CSV, префлайт-бюджет партии, отчёт в `logs/batch-*.json` | готов (P6) |
+| `project.py` | `new <name> \| use <name> \| off \| status`: скаффолд проекта и маркер активного проекта `projects/.active-project` | готов |
 | `hooks/deny_secrets.py` | PreToolUse-гард: deny на `.env`/`*.key`/`*.pem` | P0 |
+| `hooks/project_isolation.py` | PreToolUse-гард: при активном проекте deny на `projects/<другие>/` и запись в студию | готов |
 
-Общее — в `scripts/studio_common.py` (конфиги, манифест, бюджет, id ассетов).
+Общее — в `scripts/studio_common.py` (конфиги, манифест, бюджет, id ассетов,
+активный проект, guard входов `ensure_project_input`).
 Все скрипты пишут в манифест в одном формате.
 
 ## 7. Skills (три, не больше)
@@ -190,6 +194,10 @@ qc{status}, dry_run?`.
    провайдера.
 7. Приватность и цены: перед выбором модели проверять обучение на данных,
    коммерческие условия и контент-фильтры по документации провайдера.
+8. Изоляция проектов: работаем только в активном проекте
+   (`scripts/project.py new|use|off`); hook `project_isolation.py` закрывает
+   соседние `projects/<другие>/` и запись в студию, guard'ы скриптов пускают
+   входы (`--mask`, `--template`, `--data`, `--csv`) только из своего проекта.
 
 ## 9. QC для изображений
 

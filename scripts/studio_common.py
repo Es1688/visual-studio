@@ -7,6 +7,7 @@ stage 2 (video) will reuse it with type="video".
 from __future__ import annotations
 
 import json
+import re
 import threading
 from datetime import UTC, datetime
 from pathlib import Path
@@ -15,6 +16,13 @@ import jsonschema
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# Same pattern as schema/manifest.schema.json (project / asset id); keeps
+# --project args from escaping projects/ via "..", "/" or absolute paths.
+PROJECT_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+# Active-project marker inside projects/ (local-only: projects/ is gitignored).
+ACTIVE_MARKER = ".active-project"
 
 # Serializes manifest writes across threads (P6 batch runs); append_entry
 # re-reads the manifest inside the lock so concurrent writers merge entries.
@@ -99,10 +107,65 @@ def max_retries() -> int:
 
 
 def project_dir(project: str) -> Path:
+    if not PROJECT_NAME_RE.fullmatch(project):
+        raise SystemExit(
+            f"Invalid project name '{project}': must match {PROJECT_NAME_RE.pattern}"
+        )
     path = REPO_ROOT / "projects" / project
     if not path.is_dir():
         raise SystemExit(f"Unknown project '{project}': {path} not found")
     return path
+
+
+def active_project() -> str | None:
+    try:
+        name = (REPO_ROOT / "projects" / ACTIVE_MARKER).read_text(
+            encoding="utf-8"
+        ).strip()
+    except OSError:
+        return None
+    return name or None
+
+
+def set_active(project: str) -> None:
+    projects = REPO_ROOT / "projects"
+    projects.mkdir(parents=True, exist_ok=True)
+    (projects / ACTIVE_MARKER).write_text(f"{project}\n", encoding="utf-8")
+
+
+def clear_active() -> None:
+    marker = REPO_ROOT / "projects" / ACTIVE_MARKER
+    if marker.exists():
+        marker.unlink()
+
+
+def ensure_project_input(
+    project: str, path: Path | str, what: str, shared: tuple[str, ...] = ()
+) -> Path:
+    """Resolve a script input path and confine it to projects/<project>/.
+
+    Inputs (mask, template, data, csv) may be repo-relative or absolute; after
+    resolution they must stay inside the project directory — isolation rejects
+    files of neighboring projects and studio paths (AGENTS.md, «Границы»).
+    `shared` names studio library dirs (e.g. "templates") that every project
+    may read.
+    """
+    resolved = Path(path)
+    if not resolved.is_absolute():
+        resolved = REPO_ROOT / resolved
+    resolved = resolved.resolve()
+    roots = [(REPO_ROOT / "projects" / project).resolve()]
+    roots += [(REPO_ROOT / name).resolve() for name in shared]
+    for root in roots:
+        try:
+            resolved.relative_to(root)
+            return resolved
+        except ValueError:
+            continue
+    raise SystemExit(
+        f"{what} '{path}' lies outside projects/{project}/ —"
+        " isolation: a project uses only its own files"
+    )
 
 
 def manifest_path(project: str) -> Path:

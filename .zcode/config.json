@@ -10,6 +10,11 @@
               "type": "command",
               "timeoutMs": 5000,
               "command": "python3 \"${ZCODE_PROJECT_DIR}/scripts/hooks/deny_secrets.py\""
+            },
+            {
+              "type": "command",
+              "timeoutMs": 5000,
+              "command": "python3 \"${ZCODE_PROJECT_DIR}/scripts/hooks/project_isolation.py\""
             }
           ]
         }

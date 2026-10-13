@@ -333,7 +333,10 @@ def main(
 
     try:
         sc.project_dir(args.project)
-        rows = read_csv_rows(resolve_csv_path(Path(args.csv)))
+        csv_path = sc.ensure_project_input(
+            args.project, resolve_csv_path(Path(args.csv)), "--csv"
+        )
+        rows = read_csv_rows(csv_path)
     except SystemExit as exc:
         print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
         return 2

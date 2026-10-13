@@ -9,6 +9,11 @@ description: Редактирование изображений — правк�
 Реальные правки и генерация требуют `FAL_KEY`; compose детерминирован и работает
 офлайн.
 
+Работаем только в активном проекте (`project.py use <p>`): входы (`--mask`,
+`--template`, `--data`) — из `projects/<p>/`; шаблон — свой
+`projects/<p>/templates/<name>.html` или общий `templates/<name>.html`
+(читается). Соседние проекты не открываем.
+
 - **Редактирование по reference** (товар/стиль/персонаж, новое окружение):
   `uv run python scripts/edit_image.py --project <p> --asset <id> --mode edit`
   `--prompt "..." [--ref path ...]`. Товар с реального фото подавать как
@@ -21,7 +26,8 @@ description: Редактирование изображений — правк�
 - **Ресайз/кроп/конвертация и пресеты площадок** (P1+): `export.py`.
 - **Наложение текста, логотипа, CTA** (только так, модель текст не рисует):
   `uv run python scripts/compose.py --project <p> --asset <id>`
-  `--template templates/<name>.html --data data.json --ratio 1x1,4x5,9x16`.
+  `--template projects/<p>/templates/<name>.html --data projects/<p>/data.json`
+  `--ratio 1x1,4x5,9x16`.
 
 Результат скрипт кладёт в `working/` (или `exports/` для финала) и пишет в
 манифест с `parents: [<исходный ассет>]`. После — `qc_image.py` и визуальная
