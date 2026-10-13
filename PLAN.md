@@ -73,6 +73,7 @@ visual-studio/                  # корень репо = workspace
 ├── schema/manifest.schema.json
 ├── projects/<project>/
 │   ├── brief.md
+│   ├── profile.yaml             # профиль типа проекта (ADR-0004, опционально)
 │   ├── references/             # исходники заказчика; не изменять
 │   ├── generated/              # сырой результат API (в git не попадает)
 │   ├── working/                # промежуточные версии (в git не попадает)
@@ -155,7 +156,7 @@ qc{status}, dry_run?`.
 | `upscale.py` | `--asset [--scale] [--model esrgan]` | готов (P3) |
 | `compose.py` | `--project --asset --template --data --ratio 1x1,4x5,9x16`: наложение текста/логотипа/CTA по HTML-шаблону (Playwright) | готов (P4) |
 | `export.py` | `--asset --preset square_1x1\|portrait_4x5\|portrait_9x16\|landscape_16x9 [--format png\|jpg\|webp] [--quality]` | готов (P1) |
-| `qc_image.py` | `--manifest \| --project [--min-side] [--min-std]` + `--asset --set-status pass\|fail\|retry`: детерминированные проверки (схема, разрешение, aspect, не однотонное) и фиксация QC-решений | готов (P0–P5) |
+| `qc_image.py` | `--manifest \| --project [--min-side] [--min-std]` + `--asset --set-status pass\|fail\|retry`: детерминированные проверки (схема, разрешение, aspect, не однотонное) и фиксация QC-решений; с P7 — `--marketplace <universal\|wb\|ozon\|yandex> --since-id <id>`: QC площадок по профилю `projects/marketplace/profile.yaml` (разрешение, вес, формат, целевое ratio deliverable-ассетов, banned-фразы; гейт — ADR-0004) | готов (P0–P5, P7) |
 | `cost.py` | `estimate --model [--count] [--aspect]` / `spend --project [--today]` / `check --project [--planned USD]` | рабочий |
 | `batch.py` | `--project --csv [--concurrency] [--dry-run] [--limit]`: очередь из CSV, префлайт-бюджет партии, отчёт в `logs/batch-*.json` | готов (P6) |
 | `project.py` | `new <name> \| use <name> \| off \| status`: скаффолд проекта и маркер активного проекта `projects/.active-project` | готов |
@@ -166,7 +167,7 @@ qc{status}, dry_run?`.
 активный проект, guard входов `ensure_project_input`).
 Все скрипты пишут в манифест в одном формате.
 
-## 7. Skills (три, не больше)
+## 7. Skills (четыре)
 
 Тонкие SKILL.md в `.zcode/skills/` — «когда применять → какой скрипт → куда
 сохранить → как проверить → при ошибке». Правила проекта (структура, нейминг,
@@ -177,6 +178,11 @@ qc{status}, dry_run?`.
 - **image-edit** — reference-генерация, inpainting, upscale, удаление фона, ресайз
   и конвертация. Активен с P3.
 - **image-qc** — три уровня QC и решение pass/fail/retry. Частично с P1, полный с P5.
+- **marketplace-card** — специализированный (P7, ADR-0004): карточка товара для
+  маркетплейсов по docs/methodology/marketplace-card.md; двойной гейт — только
+  `projects/marketplace` с `profile.yaml type: marketplace`. Студия в остальном
+  универсальна; будущие типовые каталоги (аватарки, сайты, фото) — по той же
+  схеме «профиль + тонкий скилл» после явного решения.
 
 ## 8. Принципы этапа 1
 
@@ -261,6 +267,17 @@ Playwright (headless Chromium; зависимость добавляется з�
 `logs/`; golden-набор `projects/demo/golden.csv` — 8 брифов ≈ 0.29 USD).
 Реальный прогон партии — при `FAL_KEY`.
 
+**P7. Карточка товара для маркетплейса.** Профили типов проектов (ADR-0004):
+`projects/<p>/profile.yaml`; специализированный скилл `marketplace-card` и QC
+площадок (`qc_image.py --marketplace --since-id`) — только в
+`projects/marketplace` (двойной гейт: имя + profile.type). Пресет
+`portrait_3x4` (1080×1440) — универсальный формат студии. Шаблоны слайдов
+`mp-*.html` — в `templates/` каталога проекта. Методология —
+docs/methodology/marketplace-card.md (Часть 4 — A/B-тесты — вне скоупа студии).
+Готово, когда: по брифу заказа собирается карточка из 7–10 слайдов 3:4,
+проходящая marketplace-QC, в рамках бюджета, без касания чужих ассетов.
+**Статус: код и скилл готовы; платный пилот — при `FAL_KEY`.**
+
 ## 11. Итоговый критерий этапа 1
 
 По брифу и фото товара студия выдаёт 3 варианта баннера в 3 форматах с корректным
@@ -278,7 +295,9 @@ Playwright (headless Chromium; зависимость добавляется з�
 на расширение: видео добавится как новый `type` с теми же механизмами; MCP (если
 понадобится) — тонкой обёрткой над скриптами в `.zcode/config.json` → `mcp.servers`.
 Проверку Kinocut (зрелость, наличие MCP), выбор видеопровайдеров и лицензии Remotion
-делаем в конце этапа 1, не раньше.
+делаем в конце этапа 1, не раньше. Типовые каталоги проектов (аватарки, сайты,
+работа с фото) — по схеме ADR-0004 («профиль типа + тонкий скилл»), каждый —
+после явного решения пользователя.
 
 ## Приложение: работа в ZCode
 

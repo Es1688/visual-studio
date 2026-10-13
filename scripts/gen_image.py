@@ -11,7 +11,7 @@ Exit codes: 0 ok; 2 bad model/operation, no FAL_KEY or budget exceeded;
 
 Usage:
   python scripts/gen_image.py --project demo --prompt "..." [--model flux-dev]
-      [--aspect square|landscape_16_9|portrait_9_16|portrait_4_5] [--seed N]
+      [--aspect square|landscape_16_9|portrait_9_16|portrait_4_5|portrait_3_4] [--seed N]
       [--ref projects/demo/references/item.png ...] [--count N] [--dry-run]
 """
 
@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fal_adapter  # noqa: E402
 import studio_common as sc  # noqa: E402
 
-ASPECTS = ["square", "landscape_16_9", "portrait_9_16", "portrait_4_5"]
+ASPECTS = ["square", "landscape_16_9", "portrait_9_16", "portrait_4_5", "portrait_3_4"]
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

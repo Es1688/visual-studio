@@ -10,12 +10,12 @@ models:
     operations: [text_to_image]
     price: 0.025
     price_unit: per_megapixel      # $0.025/MP; 1080x1080 = 1.17MP ~ $0.029
-    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
+    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5, portrait_3_4]
     aspect_mode: custom_size       # payload: image_size {width, height} (256-14142, even)
     seed_supported: true
     verified: 2026-10-06
     notes: >
-      Enum image_size has no 9:16/4:5 - studio aspects go through custom sizes.
+      Enum image_size has no 9:16/4:5/3:4 - studio aspects go through custom sizes.
       NSFW safety checker on by default (enable_safety_checker); outputs marked
       suitable for personal and commercial use (BFL dev-weights license caveat
       in providers.yaml).
@@ -26,13 +26,14 @@ models:
     operations: [image_to_image, edit_reference]
     price: 0.04
     price_unit: per_image
-    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
+    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5, portrait_3_4]
     aspect_mode: aspect_ratio      # payload: aspect_ratio string
     aspect_params:
       square: "1:1"
       landscape_16_9: "16:9"
       portrait_9_16: "9:16"
       portrait_4_5: "3:4"          # no 4:5 in enum: generate 3:4, crop downstream
+      portrait_3_4: "3:4"          # native marketplace frame, no crop needed
     seed_supported: true
     verified: 2026-10-06
     notes: >
@@ -88,6 +89,9 @@ export_presets:
   square_1x1:
     width: 1080
     height: 1080
+  portrait_3x4:
+    width: 1080
+    height: 1440        # marketplace product-card frame (3:4), ADR-0004
   portrait_4x5:
     width: 1080
     height: 1350

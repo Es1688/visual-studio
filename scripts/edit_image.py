@@ -24,7 +24,7 @@ after retries.
 Usage:
   python scripts/edit_image.py --project P --asset ID
       --mode edit|inpaint|remove_background [--prompt "..."] [--mask path]
-      [--ref path ...] [--aspect square|landscape_16_9|portrait_9_16|portrait_4_5]
+      [--ref path ...] [--aspect square|landscape_16_9|portrait_9_16|portrait_4_5|portrait_3_4]
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ import fal_adapter  # noqa: E402
 import studio_common as sc  # noqa: E402
 from PIL import Image  # noqa: E402
 
-ASPECTS = ["square", "landscape_16_9", "portrait_9_16", "portrait_4_5"]
+ASPECTS = ["square", "landscape_16_9", "portrait_9_16", "portrait_4_5", "portrait_3_4"]
 MODE_TO_OPERATION = {
     "edit": "edit_reference",
     "inpaint": "inpaint",

@@ -41,6 +41,7 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 # CLI ratio -> export_presets key in config/capabilities.yaml
 RATIO_PRESETS = {
     "1x1": "square_1x1",
+    "3x4": "portrait_3x4",
     "4x5": "portrait_4x5",
     "9x16": "portrait_9x16",
     "16x9": "landscape_16x9",

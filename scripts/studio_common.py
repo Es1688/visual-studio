@@ -50,6 +50,14 @@ def load_budget() -> dict:
     return load_yaml(config_dir() / "budget.yaml")
 
 
+def load_profile(project: str) -> dict | None:
+    """Optional projects/<p>/profile.yaml: project-type settings (ADR-0004)."""
+    path = project_dir(project) / "profile.yaml"
+    if not path.is_file():
+        return None
+    return load_yaml(path)
+
+
 def find_model(model_id: str) -> dict:
     models = load_capabilities().get("models", [])
     for model in models:
@@ -65,6 +73,7 @@ ASPECT_TO_PRESET = {
     "landscape_16_9": "landscape_16x9",
     "portrait_9_16": "portrait_9x16",
     "portrait_4_5": "portrait_4x5",
+    "portrait_3_4": "portrait_3x4",
 }
 
 

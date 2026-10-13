@@ -8,7 +8,7 @@ config/capabilities.yaml -> export_presets. Local operation: cost_usd is 0.
 
 Usage:
   python scripts/export.py --project P --asset ID
-      --preset square_1x1|portrait_4x5|portrait_9x16|landscape_16x9
+      --preset square_1x1|portrait_3x4|portrait_4x5|portrait_9x16|landscape_16x9
       [--format png|jpg|webp] [--quality 85]
 """
 
@@ -23,7 +23,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import studio_common as sc  # noqa: E402
 from PIL import Image, ImageOps  # noqa: E402
 
-PRESET_CHOICES = ["square_1x1", "portrait_4x5", "portrait_9x16", "landscape_16x9"]
+PRESET_CHOICES = [
+    "square_1x1", "portrait_3x4", "portrait_4x5", "portrait_9x16", "landscape_16x9"
+]
 SAVE_FORMATS = {"png": "PNG", "jpg": "JPEG", "webp": "WEBP"}
 LOSSY_FORMATS = ("jpg", "webp")  # these are flattened to RGB and take --quality
 

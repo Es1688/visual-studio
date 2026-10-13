@@ -15,10 +15,13 @@
   окружение (FLUX Kontext);
 - **inpainting** — правка области по маске (FLUX Fill), **удаление фона** (BiRefNet);
 - **upscale** — увеличение разрешения (Clarity Upscaler);
-- **ресайз/кроп/конвертация** — пресеты площадок 1:1, 4:5, 9:16, 16:9;
+- **ресайз/кроп/конвертация** — пресеты площадок 1:1, 3:4, 4:5, 9:16, 16:9;
 - **compose** — наложение текста, логотипа и CTA по HTML-шаблону (модель текст
   не рисует — только детерминированный рендер);
-- **batch** — серия из CSV с бюджетом на партию и лимитом конкурентности.
+- **batch** — серия из CSV с бюджетом на партию и лимитом конкурентности;
+- **карточка товара для маркетплейсов** — специализированный профиль
+  `projects/marketplace` (методология, шаблоны слайдов 3:4, QC площадок),
+  см. «Профили типов проектов».
 
 Видео — этап 2, в этом репозитории не предусмотрено.
 
@@ -130,7 +133,7 @@ cp projects/myshop/working/<файл> projects/myshop/exports/  # после в�
 ├── PLAN.md                    # план этапа 1, статусы стадий
 ├── .zcode/
 │   ├── config.json            # PreToolUse-hook: запрет доступа к .env/*.key/*.pem
-│   └── skills/                # скиллы image-generate / image-edit / image-qc
+│   └── skills/                # image-generate / image-edit / image-qc / marketplace-card
 ├── config/
 │   ├── providers.yaml         # fal.ai: URL, имя env-переменной, политика провайдера
 │   ├── capabilities.yaml      # модели, эндпоинты, цены и единицы, пресеты размеров
@@ -140,6 +143,7 @@ cp projects/myshop/working/<файл> projects/myshop/exports/  # после в�
 ├── scripts/                   # детерминированный слой (см. справочник ниже)
 ├── projects/<name>/
 │   ├── brief.md               # бриф
+│   ├── profile.yaml           # профиль типа проекта (ADR-0004; опционально)
 │   ├── references/            # фото товара, логотипы — исходники заказчика
 │   ├── generated/             # сырой результат API (в git не попадает)
 │   ├── working/               # промежуточные версии (в git не попадает)
@@ -147,7 +151,9 @@ cp projects/myshop/working/<файл> projects/myshop/exports/  # после в�
 │   ├── golden.csv             # набор брифов для batch (в demo)
 │   └── manifest.json          # происхождение и стоимость каждого файла
 ├── logs/                      # отчёты batch (в git не попадает)
-├── docs/adr/                  # архитектурные решения
+├── docs/
+│   ├── adr/                   # архитектурные решения
+│   └── methodology/           # методологии (marketplace-card.md и др.)
 └── tests/                     # pytest, вся сеть замокана
 ```
 
@@ -162,7 +168,7 @@ cp projects/myshop/working/<файл> projects/myshop/exports/  # после в�
 
 ```bash
 uv run python scripts/gen_image.py --project <p> --prompt "..."
-    [--model flux-dev] [--aspect square|landscape_16_9|portrait_9_16|portrait_4_5]
+    [--model flux-dev] [--aspect square|landscape_16_9|portrait_9_16|portrait_4_5|portrait_3_4]
     [--seed N] [--count N] [--ref projects/<p>/references/x.png ...] [--dry-run]
 ```
 
@@ -215,7 +221,7 @@ uv run python scripts/compose.py --project <p> --asset <id> \
 
 ```bash
 uv run python scripts/export.py --project <p> --asset <id> \
-    --preset square_1x1|portrait_4x5|portrait_9x16|landscape_16x9 \
+    --preset square_1x1|portrait_3x4|portrait_4x5|portrait_9x16|landscape_16x9 \
     [--format png|jpg|webp] [--quality 85]
 ```
 
@@ -239,6 +245,20 @@ uv run python scripts/qc_image.py --project <p> --asset <id> --set-status pass \
 решение (в т.ч. визуальное) в манифесте; чтобы перепроверить ассет, сбросьте
 статус на `pending` правкой манифеста.
 
+Marketplace-режим (P7, только `--project marketplace` с профилем
+`type: marketplace`, ADR-0004):
+
+```bash
+uv run python scripts/qc_image.py --project marketplace \
+    --marketplace ozon --since-id marketplace-img-0014
+```
+
+Проверяет записи **после** `--since-id` (скоуп одного заказа) по
+`projects/marketplace/profile.yaml`: разрешение и вес файла, формат,
+целевое ratio (3:4 — для compose/export и генераций, заявивших
+`portrait_3_4`), banned-фразы в текстах compose. Без `--since-id` —
+отказ (exit 2): исторические записи намеренно не пересматриваются.
+
 ### cost.py — бюджет
 
 ```bash
@@ -260,6 +280,37 @@ uv run python scripts/batch.py --project demo --csv projects/demo/golden.csv \
   превышении exit 2 **до любых вызовов API** с построчными ценами.
 - Отчёт — `logs/batch-<timestamp>.json` (по строкам: статус, rc, оценка; итоги).
   Коды возврата: 0 — всё ok; 1 — есть упавшие строки; 2 — префлайт-отказ.
+
+## Профили типов проектов и карточка товара
+
+Студия универсальна, но отдельным направлениям нужна специализация
+(ADR-0004): опциональный `projects/<p>/profile.yaml` объявляет тип проекта
+(`marketplace | avatars | websites | photo | …`) и его настройки. Специализированный
+функционал активируется двойным гейтом — имя каталога **и** `profile.type` — и в
+остальных проектах недоступен. Новые типовые каталоги (аватарки, сайты, работа
+с фото) добавляются по той же схеме «профиль + тонкий скилл» после явного решения.
+
+Сейчас специализирован один каталог — `projects/marketplace` (карточки товара
+для WB/Ozon/Яндекс Маркета):
+
+- **Методология** — [docs/methodology/marketplace-card.md](docs/methodology/marketplace-card.md):
+  бриф селлера → план карточки блоками A–F (название, раскадровка 7–10 слайдов,
+  описание, запросы, самопроверка) → производство → A/B-тесты (вне скоупа студии).
+- **Профиль** — `projects/marketplace/profile.yaml`: параметры площадок
+  (3:4, от 900×1200, ≤10 МБ, jpg/png), banned-фразы.
+- **Скилл** — `/marketplace-card` (`.zcode/skills/marketplace-card/`): оркестрация
+  от брифа до exports; работает только в этом каталоге.
+- **Шаблоны слайдов** — `projects/marketplace/templates/mp-*.html`:
+  cover (слайд 1), benefits (4), specs (5), scenario (6), trust (7–8); слайды
+  2–3 — чистая генерация. Контракт `banner.html`: все тексты — из data.json.
+- **QC площадок** — `qc_image.py --marketplace <mp> --since-id <id>`:
+  разрешение/вес/формат/целевое ratio 3:4/banned-фразы (детерминированный
+  уровень); «доля товара ≥70%» и читаемость в миниатюре — визуальный уровень.
+
+Порядок работы: `project.py use marketplace` → бриф заказа `brief-<order>.md` →
+план `card-plan-<order>.md` на утверждение → генерации (`--aspect portrait_3_4`)
++ compose (`--ratio 3x4`) → `qc_image.py --marketplace … --since-id` + визуальный
+QC → утверждение → `exports/`.
 
 ## Модели и цены
 
