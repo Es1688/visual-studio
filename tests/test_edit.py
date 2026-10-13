@@ -191,10 +191,10 @@ def test_inpaint_payload_uses_mask_and_source_megapixels(staged):
     )
     assert rc == 0
 
-    assert calls["endpoint"] == "fal-ai/flux/dev/fill"
+    assert calls["endpoint"] == "fal-ai/flux-pro/v1/fill"
     payload = calls["payload"]
     assert payload["mask_url"].startswith("data:image/png;base64,")
-    assert payload["image_size"] == {"width": 1080, "height": 1080}  # square default
+    assert "image_size" not in payload  # match_input: output keeps source dims
 
     with Image.open(staged / "projects" / "demo" / "generated" / f"{asset}.png") as img:
         source_mp = img.size[0] * img.size[1] / 1e6

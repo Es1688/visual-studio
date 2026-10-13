@@ -12,8 +12,9 @@ __pycache__/
 
 # runtime artifacts
 logs/
-projects/*/generated/
-projects/*/working/
+
+# client projects live locally only — never pushed to the remote
+projects/
 
 # ZCode plan-mode session artifacts (skills/, config.json and tasks/ stay tracked)
 .zcode/plans/

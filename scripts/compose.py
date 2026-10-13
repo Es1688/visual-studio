@@ -40,6 +40,9 @@ RATIO_PRESETS = {
     "4x5": "portrait_4x5",
     "9x16": "portrait_9x16",
     "16x9": "landscape_16x9",
+    "3x2": "kwork_cover",
+    "57x10": "course_pc",
+    "5x2": "course_mobile",
 }
 
 DATA_FIELDS = ("headline", "sub", "cta")

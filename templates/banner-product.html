@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>banner-product</title>
+<style>
+  /* Product-hero variant of templates/banner.html (ADR-0003). Same
+     placeholders filled by scripts/compose.py: {{background}} {{headline}}
+     {{sub}} {{cta}} {{logo}} — here the logo slot carries the cut-out product
+     photo and is rendered large, bottom-right, instead of a small brand mark.
+     Blocks whose data is empty render as empty elements and are hidden by the
+     :empty rules at the bottom. No JS, system fonts only. */
+  :root {
+    --safe-inset: 5%;            /* safe zone: >= 5% off every side */
+    --scrim: rgba(12, 12, 14, 0.55);
+    --ink: #ffffff;
+    --cta-bg: #141418;
+    --cta-ink: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: system-ui, sans-serif;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* readability gradient behind the bottom row (CTA + product base) */
+  .ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 46%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(10, 8, 6, 0.5) 100%);
+    pointer-events: none;
+  }
+
+  .safe {
+    position: absolute;
+    inset: var(--safe-inset);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3vh;
+  }
+
+  .text {
+    align-self: flex-start;
+    max-width: 74%;
+    padding: 2.4vh 2.6vw;
+    border-radius: 2.4vh;
+    background: var(--scrim);
+    color: var(--ink);
+  }
+
+  .headline {
+    margin: 0;
+    font-size: clamp(36px, 7vw, 150px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+
+  .sub {
+    margin: 1.4vh 0 0;
+    font-size: clamp(20px, 3.4vw, 72px);
+    font-weight: 400;
+    line-height: 1.25;
+    opacity: 0.92;
+  }
+
+  .bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 3vw;
+  }
+
+  .cta {
+    display: inline-block;
+    max-width: 70vw;
+    padding: 1.8vh 4vw;
+    border-radius: 999px;
+    background: var(--cta-bg);
+    color: var(--cta-ink);
+    font-size: clamp(18px, 3vw, 64px);
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .logo-slot {
+    display: flex;
+    margin-left: auto;
+    align-items: flex-end;
+  }
+
+  .logo {
+    display: block;
+    max-width: 46vw;
+    max-height: 64vh;
+    object-fit: contain;
+    object-position: bottom;
+    filter: drop-shadow(0 2.2vh 3.2vh rgba(8, 6, 4, 0.5));
+  }
+
+  /* Hide blocks that got no data; keep whitespace out of them in the template. */
+  .headline:empty, .sub:empty, .cta:empty, .logo-slot:empty { display: none; }
+  .text:has(.headline:empty):has(.sub:empty) { display: none; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <img class="background" src="{{background}}" alt="">
+    <div class="ground"></div>
+    <div class="safe">
+      <div class="text">
+        <h1 class="headline">{{headline}}</h1>
+        <p class="sub">{{sub}}</p>
+      </div>
+      <div class="bottom">
+        <div class="cta">{{cta}}</div>
+        <div class="logo-slot">{{logo}}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -41,17 +41,20 @@ models:
 
   - id: flux-fill
     provider: fal
-    endpoint: fal-ai/flux/dev/fill   # /flux/dev/inpainting is a legacy alias
+    endpoint: fal-ai/flux-pro/v1/fill   # fal-ai/flux/dev/fill was retired (404)
     operations: [inpaint]
-    price: 0.025
-    price_unit: per_megapixel
-    aspects: [square, landscape_16_9, portrait_9_16, portrait_4_5]
-    aspect_mode: custom_size
+    price: 0.05
+    price_unit: per_megapixel           # billing rounds up to whole MP
+    aspects: []                         # output follows input image dims
+    aspect_mode: match_input            # no image_size in the payload
     seed_supported: true
-    verified: 2026-10-06
+    verified: 2026-10-12
     notes: >
-      Inputs: image_url + mask_url + prompt. "Multiple Input Penalty" value
-      not readable from the dump - re-check on the model page before long runs.
+      Inputs: image_url + mask_url + prompt; mask must match the image
+      dimensions. No image_size param (extra fields fail validation); the
+      output preserves the input aspect but fal may downscale (observed
+      1920x1072 -> 1440x800). Verified against the model API page
+      2026-10-12 after the dev/fill endpoint disappeared.
 
   - id: esrgan
     provider: fal
@@ -94,3 +97,12 @@ export_presets:
   landscape_16x9:
     width: 1920
     height: 1080
+  kwork_cover:
+    width: 660
+    height: 440          # kwork.ru cover card, 3:2
+  course_pc:
+    width: 2280
+    height: 400          # course platform desktop cover, 5.7:1
+  course_mobile:
+    width: 1300
+    height: 520          # course platform mobile cover, 2.5:1

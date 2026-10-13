@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>kwork-cover</title>
+<style>
+  /* Kwork.ru cover card, 660x440 (preset kwork_cover, ratio 3x2), designed
+     for the Roerich-palette brief of projects/max-bots. Placeholders filled
+     by scripts/compose.py: {{background}} {{headline}} {{sub}} {{cta}}
+     {{logo}} plus bespoke {{eyebrow}} and {{accent}}. cta/logo stay empty
+     (hidden via :empty) — a marketplace cover carries no CTA. Text column is
+     centered per the brief («текст по центру»); the scrim is a symmetric
+     vignette so centered copy stays readable over the artwork. No JS, local
+     fonts only (Liberation Sans for Arial-like Cyrillic display type). */
+  :root {
+    --safe-inset: 26px;
+    --ink: #f6f1e6;                 /* warm parchment white */
+    --gold: #e3b15c;
+    --gold-light: #f2d9a4;
+    --turquoise: #6fa3a0;
+    --cobalt: rgba(11, 18, 58, 0.92);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0b123a;
+    font-family: "Liberation Sans", "DejaVu Sans", system-ui, sans-serif;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* 16:9 source cropped to 3:2: keep the right-side silhouettes */
+    object-position: 75% 50%;
+  }
+
+  /* Cobalt vignette: darkest behind the centered text column, opening up
+     toward the edges so the artwork stays visible on both sides */
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        120% 140% at 50% 52%,
+        rgba(11, 18, 58, 0.88) 0%,
+        rgba(11, 18, 58, 0.74) 38%,
+        rgba(11, 18, 58, 0.38) 62%,
+        rgba(11, 18, 58, 0) 100%
+      );
+    pointer-events: none;
+  }
+
+  .safe {
+    position: absolute;
+    inset: var(--safe-inset);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+  }
+
+  .eyebrow {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(227, 177, 92, 0.55);
+    background: rgba(14, 24, 70, 0.45);
+    color: var(--gold-light);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .headline {
+    margin: 0;
+    max-width: 340px;
+    color: var(--ink);
+    font-size: 37px;
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+
+  .accent {
+    margin: -2px 0 0;
+    font-size: 74px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    background: linear-gradient(92deg, #e8b45a 0%, #f5dfa6 55%, #c9973f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 2px 12px rgba(5, 8, 30, 0.45));
+  }
+
+  .rule {
+    width: 58px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--turquoise));
+  }
+
+  .sub {
+    margin: 0;
+    max-width: 470px;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-shadow: 0 1px 10px rgba(5, 8, 30, 0.6);
+  }
+
+  /* Unused slots (cta, logo) collapse instead of leaving whitespace */
+  .eyebrow:empty, .headline:empty, .accent:empty,
+  .rule:has(+ .sub:empty), .sub:empty, .cta:empty, .logo-slot:empty {
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <img class="background" src="{{background}}" alt="">
+    <div class="scrim"></div>
+    <div class="safe">
+      <div class="eyebrow">{{eyebrow}}</div>
+      <h1 class="headline">{{headline}}</h1>
+      <div class="accent">{{accent}}</div>
+      <div class="rule"></div>
+      <p class="sub">{{sub}}</p>
+      <div class="cta">{{cta}}</div>
+      <div class="logo-slot">{{logo}}</div>
+    </div>
+  </div>
+</body>
+</html>

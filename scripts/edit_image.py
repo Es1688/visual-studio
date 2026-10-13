@@ -11,9 +11,9 @@ looked up by operation in config/capabilities.yaml, never hardcoded:
                        --aspect is passed — the fal default keeps
                        match_input_image;
 - inpaint           -> flux-fill: image_url + mask_url (--mask required) +
-                       prompt + image_size from the aspect preset (default
-                       square); billed per MP with output ~= input, so the
-                       estimate uses the actual source dimensions;
+                       prompt; billed per MP, so the estimate uses the
+                       actual source dimensions (fal keeps the aspect but
+                       may downscale the output);
 - remove_background -> birefnet: image_url + output_format png (free).
 
 Every paid call is estimated and budget-gated first (config/budget.yaml).
@@ -99,13 +99,18 @@ def build_payload(
             payload["aspect_ratio"] = model["aspect_params"][args.aspect]
         return payload
     if args.mode == "inpaint":
-        width, height = sc.aspect_pixels(args.aspect or "square")
-        return {
+        payload = {
             "image_url": image_url,
             "mask_url": fal_adapter.to_data_uri(mask_path),
             "prompt": args.prompt,
-            "image_size": {"width": width, "height": height},
         }
+        # only custom_size endpoints take an explicit image_size; match_input
+        # models (flux-pro/v1/fill) render at the source resolution and
+        # reject the extra field
+        if model.get("aspect_mode") == "custom_size":
+            width, height = sc.aspect_pixels(args.aspect or "square")
+            payload["image_size"] = {"width": width, "height": height}
+        return payload
     return {"image_url": image_url, "output_format": "png"}
 
 
@@ -212,7 +217,8 @@ def main(
     params: dict = {"mode": args.mode, "endpoint": model["endpoint"]}
     if args.mode == "inpaint":
         params["mask"] = args.mask
-        params["aspect"] = args.aspect or "square"  # drives payload image_size
+        if args.aspect is not None:
+            params["aspect"] = args.aspect  # drives image_size on custom_size models
     elif args.aspect is not None:
         params["aspect"] = args.aspect
 

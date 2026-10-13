@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>course-cover</title>
+<style>
+  /* Course platform cover, projects/card (brief.md). Two fixed renders:
+     desktop 2280x400 (preset course_pc, ratio 57x10) and mobile 1300x520
+     (preset course_mobile, ratio 5x2); the breakpoint at 1600px separates
+     them because compose.py renders each ratio at its own viewport.
+     Placeholders filled by scripts/compose.py: {{background}} {{headline}}
+     {{sub}} {{cta}} {{logo}} plus bespoke {{accent}} (green tail of the
+     headline), {{kicker}} + {{b1}}..{{b4}} («Мой метод:» and the four
+     benefits as a full-width row), {{bg_from}} {{bg_mid}} {{bg_to}}
+     (gradient sampled from the photo backdrop edge — re-sample data.json
+     when the photo changes).
+     The photo dissolves into the gradient via an alpha mask; text, circles
+     and flowing lines are pure HTML/CSS/SVG (AGENTS.md: the model never
+     draws text). No JS, local Cyrillic fonts only. */
+
+  :root {
+    --safe-y: 24px;                 /* vertical safe inset */
+    --text-left: 412px;             /* clears the photo (319px) + fade + air */
+    --text-right: 76px;
+    --ink: #23281e;                 /* deep green-charcoal */
+    --ink-soft: #353a2f;
+    --green: #4a7a52;               /* muted sage accent */
+    --line: rgba(122, 146, 116, 0.16);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    font-family: "Liberation Sans", "DejaVu Sans", system-ui, sans-serif;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Gradient field continuing the photo backdrop, lighter to the right,
+     with barely-there translucent circles (the abstraction layer). The
+     bg_from hold spans the whole photo width so no seam shows where the
+     masked photo meets the field. */
+  .field {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle 300px at 58% 26%, rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0) 100%),
+      radial-gradient(circle 210px at 72% 78%, rgba(139, 166, 124, 0.13), rgba(139, 166, 124, 0) 100%),
+      radial-gradient(circle 320px at 88% 30%, rgba(139, 166, 124, 0.12), rgba(139, 166, 124, 0) 100%),
+      radial-gradient(circle 150px at 44% 88%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 100%),
+      radial-gradient(circle 260px at 97% 82%, rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0) 100%),
+      linear-gradient(90deg, {{bg_from}} 0%, {{bg_from}} 17%, {{bg_mid}} 52%, {{bg_to}} 100%);
+  }
+
+  /* Soft flowing lines across the text zone */
+  .waves {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Photo on the left, full height; right edge dissolves into the field */
+  .photo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: auto;
+    -webkit-mask-image: linear-gradient(90deg, #000 80%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(90deg, #000 80%, rgba(0, 0, 0, 0) 100%);
+  }
+
+  .safe {
+    position: absolute;
+    top: var(--safe-y);
+    bottom: var(--safe-y);
+    left: var(--text-left);
+    right: var(--text-right);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .headline {
+    margin: 0;
+    color: var(--ink);
+    font-size: 110px;
+    font-weight: 700;
+    line-height: 1.07;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+  }
+
+  .accent {
+    color: var(--green);
+  }
+
+  .rule {
+    width: 96px;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--green), rgba(122, 146, 116, 0.25));
+  }
+
+  .kicker {
+    margin-top: 6px;
+    color: var(--green);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* The four benefits spread edge to edge (brief: text fills the space) */
+  .points {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .points li {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--ink-soft);
+    font-size: 33px;
+    font-weight: 400;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .points li::before {
+    content: "";
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), #8fae86);
+  }
+
+  .cta:empty, .logo-slot:empty { display: none; }
+
+  /* Mobile render, 1300x520: photo is 415px wide, text zone is narrower
+     and taller, so type scales down and the benefits wrap 2x2 */
+  @media (max-width: 1600px) {
+    :root {
+      --safe-y: 34px;
+      --text-left: 500px;
+      --text-right: 54px;
+    }
+
+    .field {
+      background:
+        radial-gradient(circle 300px at 62% 24%, rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0) 100%),
+        radial-gradient(circle 190px at 86% 74%, rgba(139, 166, 124, 0.13), rgba(139, 166, 124, 0) 100%),
+        radial-gradient(circle 250px at 78% 36%, rgba(139, 166, 124, 0.12), rgba(139, 166, 124, 0) 100%),
+        radial-gradient(circle 140px at 52% 90%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 100%),
+        linear-gradient(90deg, {{bg_from}} 0%, {{bg_from}} 34%, {{bg_mid}} 62%, {{bg_to}} 100%);
+    }
+
+    .safe { gap: 20px; }
+
+    .headline {
+      font-size: 70px;
+      line-height: 1.12;
+    }
+
+    .rule { width: 84px; }
+
+    .kicker { font-size: 24px; }
+
+    /* natural-width items pair up per row (b1+b2, then b3+b4): a forced
+       47% width makes the longest benefit wrap onto two lines */
+    .points {
+      flex-wrap: wrap;
+      row-gap: 22px;
+    }
+
+    .points li {
+      font-size: 30px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="field"></div>
+    <svg class="waves" viewBox="0 0 2280 400" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M 380 96 C 640 40, 940 150, 1240 104 S 1820 60, 2240 118"
+            fill="none" stroke="rgba(122, 146, 116, 0.14)" stroke-width="3"/>
+      <path d="M 420 250 C 760 320, 1060 200, 1400 268 S 1960 320, 2260 252"
+            fill="none" stroke="rgba(122, 146, 116, 0.11)" stroke-width="2.5"/>
+      <path d="M 400 340 C 800 300, 1300 372, 1780 330 S 2140 350, 2260 336"
+            fill="none" stroke="rgba(178, 190, 164, 0.20)" stroke-width="2"/>
+      <circle cx="1660" cy="118" r="150" fill="none" stroke="rgba(122, 146, 116, 0.14)" stroke-width="2"/>
+      <circle cx="2000" cy="300" r="96" fill="none" stroke="rgba(122, 146, 116, 0.13)" stroke-width="2"/>
+      <circle cx="1445" cy="320" r="54" fill="none" stroke="rgba(178, 190, 164, 0.19)" stroke-width="1.5"/>
+    </svg>
+    <img class="photo" src="{{background}}" alt="">
+    <div class="safe">
+      <h1 class="headline">{{headline}} <span class="accent">{{accent}}</span></h1>
+      <div class="rule"></div>
+      <div class="kicker">{{kicker}}</div>
+      <ul class="points">
+        <li>{{b1}}</li>
+        <li>{{b2}}</li>
+        <li>{{b3}}</li>
+        <li>{{b4}}</li>
+      </ul>
+      <div class="cta">{{cta}}</div>
+      <div class="logo-slot">{{logo}}</div>
+    </div>
+  </div>
+</body>
+</html>
